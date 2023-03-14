@@ -113,20 +113,11 @@ def spikesorting_postprocessing(params):
         # pca = compute_principal_components(we, n_components=5, mode='by_channel_local')
         print('computing quality metrics')
         metrics = sqm.compute_quality_metrics(we,  metric_names =[
-        "num_spikes",
-        "firing_rate",
-        "presence_ratio",
-        "snr",
-        "isi_violation",
-        "rp_violation",
-        "sliding_rp_violation",
-        "amplitude_cutoff",
-        "amplitude_median",
+
+
         "isolation_distance",
-        "l_ratio",
-        "d_prime",
-        "nearest_neighbor"
-    ],)
+      
+    ], **jobs_kwargs)
         assert 'isolation_distance' in metrics.columns
         # logger.info(f'Exporting to phy')
         # sexp.export_to_phy(we, outDir / 'phy_folder2',
@@ -186,22 +177,22 @@ def main():
     # Load recordings
     sessions = [sess.name for sess in datadir.glob('*_g0')]
 
-    recordings_list = []
-    # /!\ This assumes that all the recordings must have same mapping
-    for session in sessions:
-        # Extract sync onsets and save as catgt would
-        get_npix_sync(datadir / session, sync_trial_chan=[5])
+    # recordings_list = []
+    # # /!\ This assumes that all the recordings must have same mapping
+    # for session in sessions:
+    #     # Extract sync onsets and save as catgt would
+    #     get_npix_sync(datadir / session, sync_trial_chan=[5])
 
-        recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-        recording = spikeglx_preprocessing(recording)
-        recordings_list.append(recording)
+    #     recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+    #     recording = spikeglx_preprocessing(recording)
+    #     recordings_list.append(recording)
     
-    multirecordings = sc.concatenate_recordings(recordings_list)
-    multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-    logger.info('sorting now')
-    sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=working_directory,
-                             mode_if_folder_exists='keep',
-                             engine='loop', verbose=True)
+    # multirecordings = sc.concatenate_recordings(recordings_list)
+    # multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+    # logger.info('sorting now')
+    # sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=working_directory,
+    #                          mode_if_folder_exists='keep',
+    #                          engine='loop', verbose=True)
 
     # # If recordings don't have same mapping, can do something like this:
     # # In this example, only 2 mappings are in the data, but it can be extended to more mappings
