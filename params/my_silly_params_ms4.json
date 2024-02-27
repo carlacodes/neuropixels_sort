@@ -1,0 +1,30 @@
+{
+    "logpath": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/logs",
+
+    "datadir": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/F2103_Fettucini/",
+    
+
+    "sorter_list": ["mountainsort4"],
+
+    "working_directory": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject",
+
+    "output_folder": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/results_ms4",
+
+    "sorter_paths":
+    {
+        "kilosort2_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-2.0",
+        "kilosort3_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-main"
+    },
+
+    "remove_dup_spikes": true,
+    "remove_dup_spikes_params":
+    {
+        "censored_period_ms": 0.2
+    },
+
+    "jobs_kwargs":
+    {
+        "n_jobs": 6,
+        "chunk_size": 30000
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "logpath": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/logs",
+
+    "datadir": "/home/zceccgr/Scratch/zceccgr/Electrophysiological_Data/F2003_Orecchiette/S2",
+    
+
+    "sorter_list": ["pykilosort"],
+
+    "working_directory": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/",
+
+    "output_folder": "/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/results_pykilosort_s2_030423/",
+
+    "sorter_paths":
+    {
+        "kilosort2_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-2.0",
+        "kilosort3_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-main"
+    },
+
+    "remove_dup_spikes": true,
+    "remove_dup_spikes_params":
+    {
+        "censored_period_ms": 0.2
+    },
+
+    "jobs_kwargs":
+    {
+        "n_jobs": 19,
+        "chunk_size": 30000
+    }
+}
