@@ -124,7 +124,7 @@ def spikesorting_postprocessing(params, step_one_complete=False):
 
 def main():
     # parser = argparse.ArgumentParser()
-    params_file = Path('/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/params/rat_params.json')  # 'params/params.json
+    params_file = Path('/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/params/oreparams_s2.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()

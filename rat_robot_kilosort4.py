@@ -15,9 +15,7 @@ import json
 import jsmin
 from jsmin import jsmin
 import numpy as np
-
 os.environ['NUMEXPR_MAX_THREADS'] = '18'
-
 import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
@@ -124,7 +122,7 @@ def spikesorting_postprocessing(params, step_one_complete=False):
 
 def main():
     # parser = argparse.ArgumentParser()
-    params_file = Path('/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/params/rat_params.json')  # 'params/params.json
+    params_file = Path('/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/params/oreparams_s2.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -161,29 +159,29 @@ def main():
     # Load recordings
     sessions = [sess.name for sess in datadir.glob('*_g0')]
 
-    # recordings_list = []
-    # # /!\ This assumes that all the recordings must have same mapping
-    # for session in sessions:
-    #     # Extract sync onsets and save as catgt would
-    #     # get_npix_sync(datadir / session, sync_trial_chan=[5])
-    #     logger.info(session)
-    #     print(session)
-    #     imec0_file = session + '_imec0'
+    recordings_list = []
+    # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
+    for session in sessions:
+        # Extract sync onsets and save as catgt would
+        # get_npix_sync(datadir / session, sync_trial_chan=[5])
+        logger.info(session)
+        print(session)
+        imec0_file = session + '_imec0'
 
-    #     try:
-    #         # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-    #         recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-    #         recording = spikeglx_preprocessing(recording)
-    #         recordings_list.append(recording)
-    #     except:
-    #         print('issue preprocessing:'+ session)
+        try:
+            # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+            recording = spikeglx_preprocessing(recording)
+            recordings_list.append(recording)
+        except:
+            print('issue preprocessing:'+ session)
 
-    # multirecordings = sc.concatenate_recordings(recordings_list)
-    # multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-    # logger.info('sorting now')
-    # sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
-    #                          mode_if_folder_exists='keep',
-    #                          engine='loop', verbose=True)
+    multirecordings = sc.concatenate_recordings(recordings_list)
+    multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+    logger.info('sorting now')
+    sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
+                             mode_if_folder_exists='keep',
+                             engine='loop', verbose=True)
 
 
     # recordings_list = []
