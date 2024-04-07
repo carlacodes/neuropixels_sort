@@ -10,7 +10,6 @@ logger.setLevel(logging.DEBUG)
 
 from pathlib import Path
 import datetime
-import argparse
 import json
 import jsmin
 from jsmin import jsmin
@@ -122,7 +121,7 @@ def spikesorting_postprocessing(params, step_one_complete=False):
 
 def main():
     # parser = argparse.ArgumentParser()
-    params_file = Path('/home/zceccgr/Scratch/zceccgr/neuropixelsdecodingproject/params/oreparams_s2.json')  # 'params/params.json
+    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -157,7 +156,10 @@ def main():
     logger.info('Start loading recordings')
 
     # Load recordings
-    sessions = [sess.name for sess in datadir.glob('*_g0')]
+    #pull out all the sessions from the data dir, no keyword filtering
+    sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
+    print('sessions are:')
+    print(sessions)
 
     recordings_list = []
     # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
@@ -168,20 +170,23 @@ def main():
         print(session)
         imec0_file = session + '_imec0'
 
-        try:
-            # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-            recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-            recording = spikeglx_preprocessing(recording)
-            recordings_list.append(recording)
-        except:
-            print('issue preprocessing:'+ session)
+        # try:
+        # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+        print(datadir / session/ imec0_file)
+        recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+        recording = spikeglx_preprocessing(recording)
+        recordings_list.append(recording)
+        # except:
+        #     print('issue preprocessing:'+ session)
 
     multirecordings = sc.concatenate_recordings(recordings_list)
     multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
     logger.info('sorting now')
-    sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
-                             mode_if_folder_exists='keep',
-                             engine='loop', verbose=True)
+    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_070424_2/", verbose=True)
+
+    # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
+    #                          mode_if_folder_exists='keep',
+    #                          engine='loop', verbose=True)
 
 
     # recordings_list = []
