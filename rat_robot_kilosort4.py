@@ -188,7 +188,7 @@ def main():
     multirecordings = sc.concatenate_recordings(recordings_list)
     multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
     logger.info('sorting now')
-    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_090424_6/",   batch_size = 60000, verbose=True, dminx = 1750)
+    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_090424_7/",   batch_size = 60000, verbose=True, dminx = 1750)
 
     # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
     #                          mode_if_folder_exists='keep',

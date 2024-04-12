@@ -1,7 +1,7 @@
 {
     "logpath": "/nfs/nhome/live/carlag/neuropixels_sort/logs/",
 
-    "datadir": "/ceph/scratch/carlag/neuropixels_spksorting/data/Rat46/20-02-2024/",
+    "datadir": "/ceph/scratch/carlag/neuropixels_spksorting/data/Rat46/17-02-2024/",
     
 
     "sorter_list": ["kilosort4"],

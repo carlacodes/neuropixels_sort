@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=rat_test_09042024_30
-#SBATCH --output=rat_test_%j_09042024_30.txt
-#SBATCH --error=rat_test_%j_09042024_30.err
+#SBATCH --job-name=rat_test_09042024_31
+#SBATCH --output=rat_test_%j_09042024_31.txt
+#SBATCH --error=rat_test_%j_09042024_31.err
 
 #SBATCH -p a100
 #SBATCH -N 1
