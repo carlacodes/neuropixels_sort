@@ -14,7 +14,7 @@ import json
 import jsmin
 from jsmin import jsmin
 import numpy as np
-os.environ['NUMEXPR_MAX_THREADS'] = '18'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
@@ -23,7 +23,7 @@ import spikeinterface.curation as scu
 import spikeinterface.qualitymetrics as sqm
 import spikeinterface.exporters as sexp
 from spikeinterface.postprocessing import compute_principal_components
-
+import torch
 from spikeinterface.qualitymetrics import (compute_snrs, compute_firing_rates,
                                                     compute_isi_violations, calculate_pc_metrics,
                                                     compute_quality_metrics)
@@ -121,6 +121,12 @@ def spikesorting_postprocessing(params, step_one_complete=False):
 
 def main():
     # parser = argparse.ArgumentParser()
+    ##checking if torch device is available
+    logger.info('loading torch')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info("Using device:", device)
+
+
     params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
@@ -182,7 +188,7 @@ def main():
     multirecordings = sc.concatenate_recordings(recordings_list)
     multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
     logger.info('sorting now')
-    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_070424_2/", verbose=True)
+    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_090424_6/",   batch_size = 60000, verbose=True, dminx = 1750)
 
     # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
     #                          mode_if_folder_exists='keep',
