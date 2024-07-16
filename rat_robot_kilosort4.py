@@ -177,9 +177,9 @@ def main():
         imec0_file = session + '_imec0'
 
         # try:
-        # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+        recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
         print(datadir / session/ imec0_file)
-        recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+        # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
         recording = spikeglx_preprocessing(recording)
         recordings_list.append(recording)
         # except:
@@ -188,7 +188,7 @@ def main():
     multirecordings = sc.concatenate_recordings(recordings_list)
     multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
     logger.info('sorting now')
-    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_16072024/",  verbose=True)
+    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_16072024_2/",  verbose=True)
 
     # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
     #                          mode_if_folder_exists='keep',

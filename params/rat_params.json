@@ -1,7 +1,7 @@
 {
     "logpath": "/nfs/nhome/live/carlag/neuropixels_sort/logs/",
 
-    "datadir": "/ceph/scratch/carlag/robot_maze_data/raw_data/RatHC2/12-07-2024/",
+    "datadir": "/ceph/scratch/carlag/robot_maze_data/raw_data/RatHC2/15-07-2024/",
     
 
     "sorter_list": ["kilosort4"],
