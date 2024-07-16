@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=rat_test_09042024_31
-#SBATCH --output=rat_test_%j_09042024_31.txt
-#SBATCH --error=rat_test_%j_09042024_31.err
+#SBATCH --job-name=rat_test_09042024_36
+#SBATCH --output=rat_test_%j_09042024_36.txt
+#SBATCH --error=rat_test_%j_09042024_36.err
 
 #SBATCH -p a100
 #SBATCH -N 1
-#SBATCH --time=0-12:00
+#SBATCH --time=0-48:00
 #SBATCH --gres=gpu:a100:1
 #SBATCH --gres-flags=enforce-binding
 
