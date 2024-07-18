@@ -16,7 +16,7 @@ importlib_resources==6.4.0
 Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1704966972576/work
 joblib==1.4.0
 jsmin==3.0.1
-kilosort==4.0.3
+kilosort==4.0.7
 kiwisolver==1.4.5
 llvmlite==0.42.0
 MarkupSafe @ file:///home/conda/feedstock_root/build_artifacts/markupsafe_1706899945820/work
@@ -53,7 +53,7 @@ quantities==0.15.0
 scikit-learn==1.4.2
 scipy==1.13.0
 six==1.16.0
-spikeinterface==0.100.5
+spikeinterface==0.100.8
 sympy @ file:///home/conda/feedstock_root/build_artifacts/sympy_1684180540116/work
 threadpoolctl==3.4.0
 tomli==2.0.1

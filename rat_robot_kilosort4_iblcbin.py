@@ -127,7 +127,7 @@ def main():
     logger.info("Using device:", device)
 
 
-    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params.json')  # 'params/params.json
+    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -178,9 +178,9 @@ def main():
 
         # try:
         recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-        print(datadir / session/ imec0_file)
+        # print(datadir / session/ imec0_file)
         # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-        recording = spikeglx_preprocessing(recording)
+        # recording = spikeglx_preprocessing(recording)
         recordings_list.append(recording)
         # except:
         #     print('issue preprocessing:'+ session)
@@ -188,7 +188,7 @@ def main():
     multirecordings = sc.concatenate_recordings(recordings_list)
     multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
     logger.info('sorting now')
-    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_uncompressed_1507_smallbatchsize/", batch_size = 6000, verbose=True)
+    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_hc2_12_07_2024/",  verbose=True)
 
     # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
     #                          mode_if_folder_exists='keep',
