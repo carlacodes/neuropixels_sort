@@ -52,7 +52,7 @@ def spikesorting_postprocessing(sorting, output_folder):
             overwrite=False,
             ms_before=2, 
             ms_after=3., 
-            max_spikes_per_unit=300,
+            max_spikes_per_unit=500,
             sparse=True,
             num_spikes_for_sparsity=100,
             method="radius",

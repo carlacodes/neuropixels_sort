@@ -8,7 +8,7 @@
 
     "working_directory": "/nfs/nhome/live/carlag/neuropixels_sort/",
 
-    "output_folder": "/ceph/scratch/carlag/neuropixels_spksorting/output/",
+    "output_folder": "/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_uncompressed_1507_smallbatchsize/",
 
     "sorter_paths":
     {
