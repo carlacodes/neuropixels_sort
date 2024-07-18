@@ -22,17 +22,12 @@ import spikeinterface.core as sc
 import spikeinterface.curation as scu
 import spikeinterface.qualitymetrics as sqm
 import spikeinterface.exporters as sexp
+from neuropixels_sort.helpers import pipeline_helpers
 from spikeinterface.postprocessing import compute_principal_components
 import torch
 from spikeinterface.qualitymetrics import (compute_snrs, compute_firing_rates,
                                                     compute_isi_violations, calculate_pc_metrics,
                                                     compute_quality_metrics)
-
-
-def pad_amplitude(spike_time, amplitudes):
-    padded_amplitudes = np.zeros_like(spike_time)
-    padded_amplitudes[:len(amplitudes)] = amplitudes
-    return padded_amplitudes
 
 
 def spikeglx_preprocessing(recording):
@@ -157,96 +152,44 @@ def main():
 
     datadir = Path(params['datadir'])
     output_folder = Path(params['output_folder'])
+    #check if output_folder exits
+    if output_folder.exists() == False:
     # working_directory = Path(params['working_directory'])
 
-    logger.info('Start loading recordings')
+        logger.info('Start loading recordings')
 
-    # Load recordings
-    #pull out all the sessions from the data dir, no keyword filtering
-    sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
-    print('sessions are:')
-    print(sessions)
+        # Load recordings
+        #pull out all the sessions from the data dir, no keyword filtering
+        sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
+        print('sessions are:')
+        print(sessions)
 
-    recordings_list = []
-    # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
-    for session in sessions:
-        # Extract sync onsets and save as catgt would
-        # get_npix_sync(datadir / session, sync_trial_chan=[5])
-        logger.info(session)
-        print(session)
-        imec0_file = session + '_imec0'
+        recordings_list = []
+        # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
+        for session in sessions:
+            # Extract sync onsets and save as catgt would
+            # get_npix_sync(datadir / session, sync_trial_chan=[5])
+            logger.info(session)
+            print(session)
+            imec0_file = session + '_imec0'
 
-        # try:
-        recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-        # print(datadir / session/ imec0_file)
-        # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-        # recording = spikeglx_preprocessing(recording)
-        recordings_list.append(recording)
-        # except:
-        #     print('issue preprocessing:'+ session)
+            # try:
+            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            print(datadir / session/ imec0_file)
+            # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+            recording = spikeglx_preprocessing(recording)
+            recordings_list.append(recording)
+            # except:
+            #     print('issue preprocessing:'+ session)
 
-    multirecordings = sc.concatenate_recordings(recordings_list)
-    multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-    logger.info('sorting now')
-    sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_hc2_12_07_2024/",  verbose=True)
-
-    # sorting = ss.run_sorter_jobs(params['sorter_list'], [multirecordings], working_folder=params['working_directory'],
-    #                          mode_if_folder_exists='keep',
-    #                          engine='loop', verbose=True)
-
-
-    # recordings_list = []
-    # # /!\ This assumes that all the recordings must have same mapping
-    # for session in sessions:
-    #     # Extract sync onsets and save as catgt would
-    #     get_npix_sync(datadir / session, sync_trial_chan=[5])
-
-    #     recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-    #     recording = spikeglx_preprocessing(recording)
-    #     recordings_list.append(recording)
-
-    # multirecordings = sc.concatenate_recordings(recordings_list)
-    # multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-    # logger.info('sorting now')
-    # sorting = ss.run_sorters(params['sorter_list'], [multirecordings], working_folder=working_directory,
-    #                          mode_if_folder_exists='keep',
-    #                          engine='loop', verbose=True)
-
-    # # If recordings don't have same mapping, can do something like this:
-    # # In this example, only 2 mappings are in the data, but it can be extended to more mappings
-    # # To extract channel coordinates from a recording object, use recording.get_channel_locations()
-    # # To extract channel coordinates from a probe object, use probe.get_channel_locations()
-    # # And then group recordings based on this
-    # # More information about probe object on https://probeinterface.readthedocs.io/en/main/
-
-    # recordings_list_probemap_12 = []
-    # recordings_list_probemap_34 = []
-
-    # for session in sessions:
-    #     # Extract sync onsets and save as catgt would
-    #     get_npix_sync(datadir / session, sync_trial_chan=[5])
-
-    #     recording = se.read_spikeglx(catgt_data / session, stream_id='imec0.ap')
-    #     recording = spikeglx_preprocessing(recording)
-
-    #     probe = recording.get_probe()
-    #     if '0' in probe.shank_ids:
-    #         recordings_list_probemap_12.append(recording)
-    #     else:
-    #         recordings_list_probemap_34.append(recording)
-
-    # for (multirec, probemap_name) in zip(
-    #     [recordings_list_probemap_12, recordings_list_probemap_34],['probemap_12', 'probemap_34']):
-    # multirecordings = si.concatenate_recordings(multirec)
-    # multirecordings = multirecordings.set_probe(multirec[0].get_probe())
-    # multirecordings.is_filtered = True
-
-    # sorting = si.run_kilosort3(multirecordings, output_folder=catgt_data / f'{probemap_name}_concatenated')
-
-    # Not sure if it works with concatenated recordings
-    # And might take a while to run extract waveforms
-    spikesorting_postprocessing(params, step_one_complete=False)
-
+        multirecordings = sc.concatenate_recordings(recordings_list)
+        multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+        logger.info('sorting now')
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 6000, verbose=True)
+    else:
+        logger.info('Output folder already exists, skipping sorting and trying postprocessing')
+        pipeline_helpers.spikesorting_postprocessing(sorting, output_folder)
+        logger.info('Postprocessing done')
 
 if __name__ == '__main__':
     main()
