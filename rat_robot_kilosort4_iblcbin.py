@@ -22,7 +22,8 @@ import spikeinterface.core as sc
 import spikeinterface.curation as scu
 import spikeinterface.qualitymetrics as sqm
 import spikeinterface.exporters as sexp
-from neuropixels_sort.helpers import pipeline_helpers
+import spikeinterface.full as si
+from helpers import pipeline_helpers
 from spikeinterface.postprocessing import compute_principal_components
 import torch
 from spikeinterface.qualitymetrics import (compute_snrs, compute_firing_rates,
@@ -188,6 +189,7 @@ def main():
         sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 6000, verbose=True)
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
+        sorting = si.read_sorter_folder(output_folder)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder)
         logger.info('Postprocessing done')
 
