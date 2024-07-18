@@ -1,6 +1,10 @@
 from pathlib import Path
-'''author: Jules Levbert'''
+'''original author: Jules Lebert, modified by carla griffiths'''
 import spikeinterface.full as si
+import spikeinterface.extractors as se
+import spikeinterface.preprocessing as spre
+import spikeinterface.sorters as ss
+import spikeinterface.core as sc
 
 def spikeglx_preprocessing(recording):
     recording = si.bandpass_filter(recording, freq_min=300, freq_max=6000)
@@ -32,11 +36,28 @@ def spikesorting_pipeline(recording, working_directory, sorter='kilosort4'):
     return sorting
 
 
-def spikesorting_postprocessing(sorting, output_folder):
+def spikesorting_postprocessing(sorting, output_folder, datadir):
     output_folder.mkdir(exist_ok=True, parents=True)
     rec = sorting._recording
-    if rec.exists():
-        rec.annotate(is_filtered=True)
+    if rec.is_filtered == True:
+        print('already filtered')
+        pass
+    else:
+        sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
+        print('doing it on the fly, sessions are:')
+        print(sessions)
+        recordings_list = []
+        for session in sessions:
+            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            recording = spikeglx_preprocessing(recording)
+            recordings_list.append(recording)
+        multirecordings = sc.concatenate_recordings(recordings_list)
+        multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+        #save the multirecordings
+        multirecordings.save(output_folder, overwrite=True)
+        rec = multirecordings
+
+
     outDir = output_folder/ sorting.name
 
     jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)

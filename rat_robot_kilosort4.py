@@ -22,7 +22,7 @@ import spikeinterface.core as sc
 import spikeinterface.curation as scu
 import spikeinterface.qualitymetrics as sqm
 import spikeinterface.exporters as sexp
-from neuropixels_sort.helpers import pipeline_helpers
+from helpers import pipeline_helpers
 from spikeinterface.postprocessing import compute_principal_components
 import torch
 from spikeinterface.qualitymetrics import (compute_snrs, compute_firing_rates,
@@ -183,7 +183,7 @@ def main():
             recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
             print(datadir / session/ imec0_file)
             # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-            recording = spikeglx_preprocessing(recording)
+            # recording = spikeglx_preprocessing(recording)
             recordings_list.append(recording)
             # except:
             #     print('issue preprocessing:'+ session)
@@ -191,7 +191,7 @@ def main():
         multirecordings = sc.concatenate_recordings(recordings_list)
         multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
         logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder="/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_uncompressed_1507_smallbatchsize/", batch_size = 6000, verbose=True)
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder)
