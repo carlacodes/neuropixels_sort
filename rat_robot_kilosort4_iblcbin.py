@@ -158,9 +158,6 @@ def main():
     # working_directory = Path(params['working_directory'])
 
         logger.info('Start loading recordings')
-
-        # Load recordings
-        #pull out all the sessions from the data dir, no keyword filtering
         sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
         print('sessions are:')
         print(sessions)
@@ -186,12 +183,14 @@ def main():
         multirecordings = sc.concatenate_recordings(recordings_list)
         multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
         #save the multirecordings
-        multirecordings.save(output_folder, overwrite=True, n_jobs = -1)
+        logger.info('saving multirecordings')
+        job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
+
+        multirecordings.save(folder = output_folder, **job_kwargs)
         logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True, save_preprocessed_copy = True)
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 1000, verbose=True, save_preprocessed_copy=True)
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
-
         sorting = si.read_sorter_folder(output_folder)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
         logger.info('Postprocessing done')

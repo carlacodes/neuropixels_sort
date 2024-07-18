@@ -190,8 +190,11 @@ def main():
 
         multirecordings = sc.concatenate_recordings(recordings_list)
         multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+        job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
+
+        multirecordings.save(folder = output_folder, **job_kwargs)
         logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 1000, verbose=True, save_preprocessed_copy = True)
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder)
