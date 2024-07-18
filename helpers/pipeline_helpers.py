@@ -35,6 +35,8 @@ def spikesorting_pipeline(recording, working_directory, sorter='kilosort4'):
 def spikesorting_postprocessing(sorting, output_folder):
     output_folder.mkdir(exist_ok=True, parents=True)
     rec = sorting._recording
+    if rec.exists():
+        rec.annotate(is_filtered=True)
     outDir = output_folder/ sorting.name
 
     jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
