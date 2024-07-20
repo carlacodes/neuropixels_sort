@@ -5,6 +5,8 @@ import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
 import spikeinterface.core as sc
+from spikeinterface.preprocessing import bandpass_filter
+
 
 def spikeglx_preprocessing(recording):
     recording = si.bandpass_filter(recording, freq_min=300, freq_max=6000)
@@ -38,7 +40,15 @@ def spikesorting_pipeline(recording, working_directory, sorter='kilosort4'):
 
 def spikesorting_postprocessing(sorting, output_folder, datadir):
     output_folder.mkdir(exist_ok=True, parents=True)
+
+    outDir = output_folder/ sorting.name
+
+    jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
+    print('removing dupliated spikes')
+    sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
     rec = sorting._recording
+    print('filtering rec')
+
     if rec.is_filtered == True:
         print('already filtered')
         pass
@@ -48,22 +58,18 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
         print(sessions)
         recordings_list = []
         for session in sessions:
-            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            try:
+                imec0_file = session + '_imec0'
+
+                recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+            except:
+                recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
             recording = spikeglx_preprocessing(recording)
             recordings_list.append(recording)
         multirecordings = sc.concatenate_recordings(recordings_list)
         multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-        #save the multirecordings
-        # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
-
-        # multirecordings.save(folder = output_folder, **job_kwargs)
         rec = multirecordings
 
-
-    outDir = output_folder/ sorting.name
-
-    jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
-    sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
 
     if (outDir / 'waveforms_folder').exists():
         we = si.load_waveforms(
@@ -73,8 +79,9 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
             )
 
     else:
+        print('extractng waveforms')
         we = si.extract_waveforms(rec, sorting, outDir / 'waveforms_folder',
-            overwrite=False,
+            overwrite=None,
             ms_before=2, 
             ms_after=3., 
             max_spikes_per_unit=500,
