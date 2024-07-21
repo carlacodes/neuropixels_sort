@@ -120,10 +120,10 @@ def main():
     ##checking if torch device is available
     logger.info('loading torch')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info("Using device:", device)
+    logger.info(device)
 
 
-    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
+    params_file = Path('C:/repos/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -172,9 +172,9 @@ def main():
             imec0_file = session + '_imec0'
 
             # try:
-            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
             print(datadir / session/ imec0_file)
-            # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+            recording = se.read_cbin_ibl(datadir / session/ imec0_file)
             recording = spikeglx_preprocessing(recording)
             recordings_list.append(recording)
             # except:
@@ -186,9 +186,11 @@ def main():
         logger.info('saving multirecordings')
         job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
 
-        multirecordings.save(folder = output_folder, **job_kwargs)
+        # multirecordings.save(folder = output_folder, **job_kwargs)
         logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 1000, verbose=True, save_preprocessed_copy=True)
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
+        pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
+
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
         sorting = si.read_sorter_folder(output_folder)

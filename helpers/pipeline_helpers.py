@@ -62,7 +62,7 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
 
     outDir = output_folder/ sorting.name
 
-    jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
+    jobs_kwargs = dict(n_jobs=18, chunk_duration='1s', progress_bar=True)
     sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
 
     if (outDir / 'waveforms_folder').exists():
