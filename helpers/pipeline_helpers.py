@@ -5,7 +5,16 @@ import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
 import spikeinterface.core as sc
+from threadpoolctl import threadpool_limits
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
+
+logging.debug("Before threadpool_limits")
+# Limit the number of threads to 1 for libraries using OpenMP
+with threadpool_limits(limits=12, user_api='blas'):
+    # Your code that uses the conflicting libraries here
+    pass
 def spikeglx_preprocessing(recording):
     recording = si.bandpass_filter(recording, freq_min=300, freq_max=6000)
     bad_channel_ids, channel_labels = si.detect_bad_channels(recording)
@@ -39,27 +48,6 @@ def spikesorting_pipeline(recording, working_directory, sorter='kilosort4'):
 def spikesorting_postprocessing(sorting, output_folder, datadir):
     output_folder.mkdir(exist_ok=True, parents=True)
     rec = sorting._recording
-    if rec.is_filtered == True:
-        print('already filtered')
-        pass
-    else:
-        print('..warning, setting to filtered = true even though annotation says false')
-        rec.is_filtered = True
-        # sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
-        # print('doing it on the fly, sessions are:')
-        # print(sessions)
-        # recordings_list = []
-        # for session in sessions:
-        #     recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-        #     recording = spikeglx_preprocessing(recording)
-        #     recordings_list.append(recording)
-        # multirecordings = sc.concatenate_recordings(recordings_list)
-        # multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-        # #save the multirecordings
-        # # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
-        #
-        # # multirecordings.save(folder = output_folder, **job_kwargs)
-        # rec = multirecordings
 
 
     outDir = output_folder/ sorting.name
@@ -73,6 +61,13 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
             sorting=sorting,
             with_recording=True,
             )
+        with threadpool_limits(limits=12, user_api='blas'):
+
+            si.export_report(we, outDir / 'report',
+                             format='png',
+                             force_computation=True,
+                             **jobs_kwargs,
+                             )
 
     else:
         we = si.extract_waveforms(rec, sorting, outDir / 'waveforms_folder',
@@ -86,24 +81,29 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
             radius_um=40,
             **jobs_kwargs,
             )
-        
-    if not (outDir / 'report').exists():
-        metrics = si.compute_quality_metrics(
-            we, 
-            n_jobs = jobs_kwargs['n_jobs'], 
-            verbose=True,
-            )
-        
-        si.export_to_phy(we, outDir / 'phy_folder', 
-                        verbose=True, 
-                        compute_pc_features=False,
-                        copy_binary=False,
-                        remove_if_exists=True,
-                        **jobs_kwargs,
-                        )
 
-        si.export_report(we, outDir / 'report',
-                format='png',
-                force_computation=True,
-                **jobs_kwargs,
+        logging.debug("Before threadpool_limits")
+
+        with threadpool_limits(limits=12, user_api='blas'):
+            logging.debug("Inside threadpool_limits")
+
+            metric_list = si.get_quality_metric_list()
+            metrics = si.compute_quality_metrics(
+                we,
+                n_jobs = jobs_kwargs['n_jobs'],
+                verbose=True,
                 )
+            si.export_to_phy(we, outDir / 'phy_folder',
+                            verbose=True,
+                            compute_pc_features=False,
+                            copy_binary=False,
+                            remove_if_exists=False,
+                            **jobs_kwargs,
+                            )
+
+
+            si.export_report(we, outDir / 'report',
+                    format='png',
+                    force_computation=True,
+                    **jobs_kwargs,
+                    )

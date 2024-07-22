@@ -194,6 +194,7 @@ def main():
 
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
+
         sorting = si.read_sorter_folder(output_folder)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
         logger.info('Postprocessing done')
