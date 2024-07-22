@@ -120,10 +120,10 @@ def main():
     ##checking if torch device is available
     logger.info('loading torch')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info("Using device:", device)
+    logger.info(device)
 
 
-    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
+    params_file = Path('C:/repos/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -188,11 +188,12 @@ def main():
 
         # multirecordings.save(folder = output_folder, **job_kwargs)
         logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 30000, verbose=True)
+        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
         logger.info('Postprocessing done')
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
+
         sorting = si.read_sorter_folder(output_folder)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
         logger.info('Postprocessing done')

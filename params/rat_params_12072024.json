@@ -1,13 +1,14 @@
 {
-    "logpath": "/nfs/nhome/live/carlag/neuropixels_sort/logs/",
+    "logpath": "C:/repos/neuropixels_sort/logs/",
 
     "datadir": "/ceph/scratch/carlag/robot_maze_data/raw_data/RatHC2/12-07-2024/",
 
     "sorter_list": ["kilosort4"],
 
-    "working_directory": "/nfs/nhome/live/carlag/neuropixels_sort/",
+    "working_directory": "C:/repos//neuropixels_sort/",
 
     "output_folder": "/ceph/scratch/carlag/neuropixels_spksorting/output_19072024_hc2_12_07_2024/",
+
 
     "sorter_paths":
     {
