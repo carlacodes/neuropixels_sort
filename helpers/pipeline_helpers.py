@@ -6,8 +6,7 @@ import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
 import spikeinterface.core as sc
 import logging
-=======
-
+from threadpoolctl import threadpool_limits
 
 logging.basicConfig(level=logging.DEBUG)
 
