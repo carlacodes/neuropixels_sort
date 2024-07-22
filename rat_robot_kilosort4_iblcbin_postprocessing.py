@@ -59,71 +59,16 @@ def spikesorting_pipeline(rec_name, params):
                                     verbose=True)
 
 
-def spikesorting_postprocessing(params, step_one_complete=False):
-    jobs_kwargs = params['jobs_kwargs']
-    if step_one_complete == False:
-        sorting_output = ss.collect_sorting_outputs(Path(params['working_directory']))
-        for (rec_name, sorter_name), sorting in sorting_output.items():
-            logger.info(f'Postprocessing {rec_name} {sorter_name}')
-            if params['remove_dup_spikes']:
-                print('remove dup spikes')
-                logger.info(f'removing duplicate spikes')
-                sorting = scu.remove_duplicated_spikes(sorting, censored_period_ms=params['remove_dup_spikes_params'][
-                    'censored_period_ms'])
-                sorting = scu.remove_excess_spikes(sorting, sorting._recording)
-
-            logger.info('waveform extraction')
-            outDir = Path(params['output_folder']) / rec_name / sorter_name
-            # we = sc.extract_waveforms(sorting._recording, sorting, outDir / 'waveforms_folder2', ms_before=1, ms_after=2., max_spikes_per_unit=300, n_jobs = -1, chunk_size=3000)
-            we = sc.extract_waveforms(sorting._recording, sorting, outDir / 'waveforms_folder_sparse3',
-                    load_if_exists=True,
-                    # overwrite=False,
-                    ms_before=2, 
-                    ms_after=3., 
-                    max_spikes_per_unit=300,
-                    sparse=True,
-                    num_spikes_for_sparsity=100,
-                    method="radius",
-                    radius_um=100,
-                    **jobs_kwargs)            # we = sc.load_waveforms(outDir / 'waveforms_sparse_folder')
-            logger.info(f'Computing quality metrics')
-            # with PCs
-
-            pca = compute_principal_components(we, n_components=3, mode='by_channel_local')
-            # logger.info('compute lratio')
-            #changed number of jobs to 1 as was runing out of space from parallel computation
-            metrics = compute_quality_metrics(we, metric_names=['d_prime'], n_jobs=8)
-            # metrics = compute_quality_metrics(we)
-            logger.info('Export report')
-            print('exporting report')
-            sexp.export_report(we, outDir / 'report2', format='png', force_computation=False, **jobs_kwargs)
-            #n_jobs = 8, chunk_size=3000
-            # logger.info(f'Exporting to phy')
-            # sexp.export_to_phy(we, outDir / 'phy5_folder', remove_if_exists=True,
-            #                 verbose=True,
-            #                 compute_pc_features=False,
-            #                 **jobs_kwargs) 
-
-
-
-    
-
-        # try:
-        #     logger.info('Export report')
-        #     sexp.export_report(we, outDir / 'report', padded_amplitudes_array, format='png', force_computation=False, use_padded_amplitudes=False, **jobs_kwargs)
-        # except Exception as e:
-        #     logger.warning(f'Export report failed: {e}')
-
 
 def main():
     # parser = argparse.ArgumentParser()
     ##checking if torch device is available
     logger.info('loading torch')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info(device)
+    logger.info("Using device:", device)
 
 
-    params_file = Path('C:/repos/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
+    params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
     # parser.add_argument("params_file", help="path to the json file containing the parameters")
     # args.params_file = params_file
     # args = parser.parse_args()
@@ -152,7 +97,7 @@ def main():
         ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
 
     datadir = Path(params['datadir'])
-    output_folder = Path(params['output_folder'])
+    output_folder = Path('/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_hc2_12_07_2024')
     #check if output_folder exits
     if output_folder.exists() == False:
     # working_directory = Path(params['working_directory'])
@@ -172,9 +117,9 @@ def main():
             imec0_file = session + '_imec0'
 
             # try:
-            # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
             print(datadir / session/ imec0_file)
-            recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+            # recording = se.read_cbin_ibl(datadir / session/ imec0_file)
             recording = spikeglx_preprocessing(recording)
             recordings_list.append(recording)
             # except:
@@ -182,18 +127,16 @@ def main():
 
         multirecordings = sc.concatenate_recordings(recordings_list)
         multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-        #save the multirecordings
-        logger.info('saving multirecordings')
-        # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
+        # #save the multirecordings
+        # logger.info('saving multirecordings')
+        # # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
 
         # multirecordings.save(folder = output_folder, **job_kwargs)
         logger.info('sorting now')
         sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
-        pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
-        logger.info('Postprocessing done')
     else:
+        print('sorting path already exists')
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')
-
         sorting = si.read_sorter_folder(output_folder)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
         logger.info('Postprocessing done')

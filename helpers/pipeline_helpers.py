@@ -5,8 +5,9 @@ import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
 import spikeinterface.core as sc
-from threadpoolctl import threadpool_limits
 import logging
+=======
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -47,6 +48,12 @@ def spikesorting_pipeline(recording, working_directory, sorter='kilosort4'):
 
 def spikesorting_postprocessing(sorting, output_folder, datadir):
     output_folder.mkdir(exist_ok=True, parents=True)
+
+    outDir = output_folder/ sorting.name
+
+    jobs_kwargs = dict(n_jobs=-1, chunk_duration='1s', progress_bar=True)
+    print('removing dupliated spikes')
+    sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
     rec = sorting._recording
 
 
@@ -70,8 +77,9 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
                              )
 
     else:
+        print('extractng waveforms')
         we = si.extract_waveforms(rec, sorting, outDir / 'waveforms_folder',
-            overwrite=False,
+            overwrite=None,
             ms_before=2, 
             ms_after=3., 
             max_spikes_per_unit=500,
