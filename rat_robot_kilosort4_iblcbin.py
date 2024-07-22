@@ -190,6 +190,7 @@ def main():
         logger.info('sorting now')
         sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
         pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
+        logger.info('Postprocessing done')
 
     else:
         logger.info('Output folder already exists, skipping sorting and trying postprocessing')

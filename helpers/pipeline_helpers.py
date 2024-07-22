@@ -43,21 +43,23 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
         print('already filtered')
         pass
     else:
-        sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
-        print('doing it on the fly, sessions are:')
-        print(sessions)
-        recordings_list = []
-        for session in sessions:
-            recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-            recording = spikeglx_preprocessing(recording)
-            recordings_list.append(recording)
-        multirecordings = sc.concatenate_recordings(recordings_list)
-        multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-        #save the multirecordings
-        # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
-
-        # multirecordings.save(folder = output_folder, **job_kwargs)
-        rec = multirecordings
+        print('..warning, setting to filtered = true even though annotation says false')
+        rec.is_filtered = True
+        # sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
+        # print('doing it on the fly, sessions are:')
+        # print(sessions)
+        # recordings_list = []
+        # for session in sessions:
+        #     recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+        #     recording = spikeglx_preprocessing(recording)
+        #     recordings_list.append(recording)
+        # multirecordings = sc.concatenate_recordings(recordings_list)
+        # multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+        # #save the multirecordings
+        # # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
+        #
+        # # multirecordings.save(folder = output_folder, **job_kwargs)
+        # rec = multirecordings
 
 
     outDir = output_folder/ sorting.name
