@@ -152,7 +152,12 @@ def main():
         ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
 
     datadir = Path(params['datadir'])
+    day_folder = datadir.name
+    rat_folder = datadir.parent.name
     output_folder = Path(params['output_folder'])
+    #concatenate the rat_folder and day_folder to the output_folder
+    output_folder = str(output_folder)+ f'_{rat_folder}'+ f'_{day_folder}'
+
     #check if output_folder exits
     if output_folder.exists() == False:
     # working_directory = Path(params['working_directory'])

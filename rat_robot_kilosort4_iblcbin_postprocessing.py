@@ -97,7 +97,11 @@ def main():
         ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
 
     datadir = Path(params['datadir'])
-    output_folder = Path('/ceph/scratch/carlag/neuropixels_spksorting/output_17072024_hc2_12_07_2024')
+    output_folder = Path(params['output_folder'])
+    rat_dir = datadir.parent.name
+    day_dir = datadir.name
+    #concatenate the rat_folder and day_folder to the output_folder
+    output_folder = Path(f'{str(output_folder)}_{rat_dir}_{day_dir}')
     #check if output_folder exits
     if output_folder.exists() == False:
     # working_directory = Path(params['working_directory'])
