@@ -7,14 +7,14 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger('sorting')
 logger.setLevel(logging.DEBUG)
-
 from pathlib import Path
 import datetime
 import json
 import jsmin
 from jsmin import jsmin
-import numpy as np
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['NUMEXPR_MAX_THREADS'] = '16'
+os.environ['OPENBLAS_NUM_THREADS'] = '16'
 import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
@@ -29,6 +29,11 @@ import torch
 from spikeinterface.qualitymetrics import (compute_snrs, compute_firing_rates,
                                                     compute_isi_violations, calculate_pc_metrics,
                                                     compute_quality_metrics)
+
+#set limit of 16 threads
+from threadpoolctl import threadpool_limits
+
+
 
 
 def spikeglx_preprocessing(recording):
@@ -118,90 +123,94 @@ def spikesorting_postprocessing(params, step_one_complete=False):
 def main():
     # parser = argparse.ArgumentParser()
     ##checking if torch device is available
-    logger.info('loading torch')
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info(device)
+    with threadpool_limits(limits=16, user_api='blas'):
+        logger.info('loading torch')
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(device)
 
 
-    params_file = Path('C:/repos/neuropixels_sort/params/rat_params_12072024.json')  # 'params/params.json
-    # parser.add_argument("params_file", help="path to the json file containing the parameters")
-    # args.params_file = params_file
-    # args = parser.parse_args()
+        params_file = Path('C:/repos/neuropixels_sort/params/rat_params.json')  # 'params/params.json
+        # parser.add_argument("params_file", help="path to the json file containing the parameters")
+        # args.params_file = params_file
+        # args = parser.parse_args()
 
-    with open(params_file) as json_file:
-        minified = jsmin(json_file.read())  # Parses out comments.
-        params = json.loads(minified)
+        with open(params_file) as json_file:
+            minified = jsmin(json_file.read())  # Parses out comments.
+            params = json.loads(minified)
 
-    logpath = Path(params['logpath'])
-    now = datetime.datetime.now().strftime('%d-%m-%Y_%H_%M_%S')
+        logpath = Path(params['logpath'])
+        now = datetime.datetime.now().strftime('%d-%m-%Y_%H_%M_%S')
 
-    fh = logging.FileHandler(logpath / f'neuropixels_sorting_logs_{now}.log')
-    fh.setLevel(logging.DEBUG)
-    logger.addHandler(fh)
+        fh = logging.FileHandler(logpath / f'neuropixels_sorting_logs_{now}.log')
+        fh.setLevel(logging.DEBUG)
+        logger.addHandler(fh)
 
-    logger.info('Starting')
+        logger.info('Starting')
 
-    sorter_list = params['sorter_list']  # ['klusta'] #'kilosort2']
-    logger.info(f'sorter list: {sorter_list}')
+        sorter_list = params['sorter_list']  # ['klusta'] #'kilosort2']
+        logger.info(f'sorter list: {sorter_list}')
 
-    if 'kilosort2' in sorter_list:
-        ss.Kilosort2Sorter.set_kilosort2_path(params['sorter_paths']['kilosort2_path'])
-    if 'waveclus' in sorter_list:
-        ss.WaveClusSorter.set_waveclus_path(params['sorter_paths']['waveclus_path'])
-    if 'kilosort3' in sorter_list:
-        ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
+        if 'kilosort2' in sorter_list:
+            ss.Kilosort2Sorter.set_kilosort2_path(params['sorter_paths']['kilosort2_path'])
+        if 'waveclus' in sorter_list:
+            ss.WaveClusSorter.set_waveclus_path(params['sorter_paths']['waveclus_path'])
+        if 'kilosort3' in sorter_list:
+            ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
 
-    datadir = Path(params['datadir'])
-    day_folder = datadir.name
-    rat_folder = datadir.parent.name
-    output_folder = Path(params['output_folder'])
-    #concatenate the rat_folder and day_folder to the output_folder
-    output_folder = str(output_folder)+ f'_{rat_folder}'+ f'_{day_folder}'
+        datadir = Path(params['datadir'])
+        day_folder = datadir.name
+        rat_folder = datadir.parent.name
+        output_folder = Path(params['output_folder'])
+        #concatenate the rat_folder and day_folder to the output_folder
+        output_folder = str(output_folder)+ f'_{rat_folder}'+ f'_{day_folder}'
+        output_folder = Path(output_folder)
 
-    #check if output_folder exits
-    if output_folder.exists() == False:
-    # working_directory = Path(params['working_directory'])
+        #check if output_folder exits
+        if output_folder.exists() == False:
+        # working_directory = Path(params['working_directory'])
 
-        logger.info('Start loading recordings')
-        sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
-        print('sessions are:')
-        print(sessions)
+            logger.info('Start loading recordings')
+            sessions = [f.name for f in datadir.iterdir() if f.is_dir()]
+            print('sessions are:')
+            print(sessions)
 
-        recordings_list = []
-        # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
-        for session in sessions:
-            # Extract sync onsets and save as catgt would
-            # get_npix_sync(datadir / session, sync_trial_chan=[5])
-            logger.info(session)
-            print(session)
-            imec0_file = session + '_imec0'
+            recordings_list = []
+            # /!\ This assumes that all the recordings must have same mapping, pretty sure I was reading using the IBL cbin function after compressing the data
+            for session in sessions:
+                # Extract sync onsets and save as catgt would
+                # get_npix_sync(datadir / session, sync_trial_chan=[5])
+                logger.info(session)
+                print(session)
+                imec0_file = session + '_imec0'
 
-            # try:
-            # recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
-            print(datadir / session/ imec0_file)
-            recording = se.read_cbin_ibl(datadir / session/ imec0_file)
-            recording = spikeglx_preprocessing(recording)
-            recordings_list.append(recording)
-            # except:
-            #     print('issue preprocessing:'+ session)
+                try:
+                    recording = se.read_spikeglx(datadir / session, stream_id='imec0.ap')
+                    print(datadir / session/ imec0_file)
+                except Exception as e:
+                    print(f'error loading recording: {e}, going to ibl file')
+                    recording = se.read_cbin_ibl(datadir / session/ imec0_file)
+                recording = spikeglx_preprocessing(recording)
+                recordings_list.append(recording)
+                # except:
+                #     print('issue preprocessing:'+ session)
 
-        multirecordings = sc.concatenate_recordings(recordings_list)
-        multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
-        #save the multirecordings
-        logger.info('saving multirecordings')
-        # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
+            multirecordings = sc.concatenate_recordings(recordings_list)
+            multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
+            #save the multirecordings
+            # logger.info('saving multirecordings')
+            # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
 
-        # multirecordings.save(folder = output_folder, **job_kwargs)
-        logger.info('sorting now')
-        sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
-        pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
-        logger.info('Postprocessing done')
-    else:
-        logger.info('Output folder already exists, skipping sorting and trying postprocessing')
+            # multirecordings.save(folder = output_folder, **job_kwargs)
+            logger.info('sorting now')
+            sorting = ss.run_sorter(sorter_name="kilosort4", recording=multirecordings, output_folder=output_folder, batch_size = 60000, verbose=True)
+            pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
+            logger.info('Postprocessing done')
+        else:
+            logger.info('Output folder already exists, skipping sorting and trying postprocessing')
 
-        sorting = si.read_sorter_folder(output_folder)
-        pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
-        logger.info('Postprocessing done')
+            sorting = si.read_sorter_folder(output_folder)
+            pipeline_helpers.spikesorting_postprocessing(sorting, output_folder, datadir)
+            logger.info('Postprocessing done')
 
 if __name__ == '__main__':
     main()
