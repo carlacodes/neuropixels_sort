@@ -197,7 +197,7 @@ def main():
             multirecordings = sc.concatenate_recordings(recordings_list)
             multirecordings = multirecordings.set_probe(recordings_list[0].get_probe())
             #save the multirecordings
-            logger.info('saving multirecordings')
+            # logger.info('saving multirecordings')
             # job_kwargs = dict(n_jobs=-1, chunk_duration="1s", progress_bar=True)
 
             # multirecordings.save(folder = output_folder, **job_kwargs)
