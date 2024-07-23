@@ -1,0 +1,30 @@
+{
+    "logpath": "/nfs/nhome/live/carlag/neuropixels_sort/logs/",
+
+    "datadir": "/ceph/scratch/carlag/robot_maze_data/raw_data/RatHC4/RatHC4_22-07-2024/",
+    
+
+    "sorter_list": ["kilosort4"],
+
+    "working_directory": "C:/repos/neuropixels_sort/",
+
+    "output_folder": "/ceph/scratch/carlag/neuropixels_spksorting/output/",
+
+    "sorter_paths":
+    {
+        "kilosort2_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-2.0",
+        "kilosort3_path": "/home/zceccgr/Scratch/zceccgr/Kilosort-main"
+    },
+
+    "remove_dup_spikes": true,
+    "remove_dup_spikes_params":
+    {
+        "censored_period_ms": 0.2
+    },
+
+    "jobs_kwargs":
+    {
+        "n_jobs": -1,
+        "chunk_size": 30000
+    }
+}

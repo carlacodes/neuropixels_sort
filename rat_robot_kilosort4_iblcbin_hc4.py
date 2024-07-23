@@ -129,7 +129,7 @@ def main():
         logger.info(device)
 
 
-        params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_hc215072024.json')  # 'params/params.json
+        params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_hc4.json')  # 'params/params.json
         # parser.add_argument("params_file", help="path to the json file containing the parameters")
         # args.params_file = params_file
         # args = parser.parse_args()
