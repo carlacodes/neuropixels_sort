@@ -55,21 +55,15 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
     sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
     rec = sorting._recording
 
-
-    outDir = output_folder/ sorting.name
-
-    jobs_kwargs = dict(n_jobs=18, chunk_duration='1s', progress_bar=True)
-    sorting = si.remove_duplicated_spikes(sorting, censored_period_ms=2)
-
     if (outDir / 'waveforms_folder').exists():
         we = si.load_waveforms(
             outDir / 'waveforms_folder', 
             sorting=sorting,
             with_recording=True,
             )
-        with threadpool_limits(limits=12, user_api='blas'):
+        # with threadpool_limits(limits=12, user_api='blas'):
 
-            si.export_report(we, outDir / 'report',
+        si.export_report(we, outDir / 'report',
                              format='png',
                              force_computation=True,
                              **jobs_kwargs,
@@ -89,28 +83,26 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
             **jobs_kwargs,
             )
 
-        logging.debug("Before threadpool_limits")
 
-        with threadpool_limits(limits=12, user_api='blas'):
-            logging.debug("Inside threadpool_limits")
 
-            metric_list = si.get_quality_metric_list()
-            metrics = si.compute_quality_metrics(
-                we,
-                n_jobs = jobs_kwargs['n_jobs'],
-                verbose=True,
+
+        metric_list = si.get_quality_metric_list()
+        metrics = si.compute_quality_metrics(
+            we,
+            n_jobs = jobs_kwargs['n_jobs'],
+            verbose=True,
+            )
+        si.export_to_phy(we, outDir / 'phy_folder',
+                        verbose=True,
+                        compute_pc_features=False,
+                        copy_binary=False,
+                        remove_if_exists=False,
+                        **jobs_kwargs,
+                        )
+
+
+        si.export_report(we, outDir / 'report',
+                format='png',
+                force_computation=True,
+                **jobs_kwargs,
                 )
-            si.export_to_phy(we, outDir / 'phy_folder',
-                            verbose=True,
-                            compute_pc_features=False,
-                            copy_binary=False,
-                            remove_if_exists=False,
-                            **jobs_kwargs,
-                            )
-
-
-            si.export_report(we, outDir / 'report',
-                    format='png',
-                    force_computation=True,
-                    **jobs_kwargs,
-                    )

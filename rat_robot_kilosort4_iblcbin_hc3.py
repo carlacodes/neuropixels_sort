@@ -1,6 +1,7 @@
 # Set logging before the rest as neo (and neo-based imports) needs to be imported after logging has been set
 import logging
 import os
+import sys
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
@@ -12,7 +13,6 @@ import datetime
 import json
 import jsmin
 from jsmin import jsmin
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import spikeinterface.extractors as se
 import spikeinterface.preprocessing as spre
 import spikeinterface.sorters as ss
@@ -100,22 +100,6 @@ def spikesorting_postprocessing(params, step_one_complete=False):
             logger.info('Export report')
             print('exporting report')
             sexp.export_report(we, outDir / 'report2', format='png', force_computation=False, **jobs_kwargs)
-            #n_jobs = 8, chunk_size=3000
-            # logger.info(f'Exporting to phy')
-            # sexp.export_to_phy(we, outDir / 'phy5_folder', remove_if_exists=True,
-            #                 verbose=True,
-            #                 compute_pc_features=False,
-            #                 **jobs_kwargs) 
-
-
-
-    
-
-        # try:
-        #     logger.info('Export report')
-        #     sexp.export_report(we, outDir / 'report', padded_amplitudes_array, format='png', force_computation=False, use_padded_amplitudes=False, **jobs_kwargs)
-        # except Exception as e:
-        #     logger.warning(f'Export report failed: {e}')
 
 
 def main():
@@ -127,7 +111,8 @@ def main():
         logger.info(device)
 
 
-        params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_hc215072024.json')  # 'params/params.json
+        params_file = Path('/nfs/nhome/live/carlag/neuropixels_sort/params/rat_params_hc3.json')
+          # 'params/params.json
         # parser.add_argument("params_file", help="path to the json file containing the parameters")
         # args.params_file = params_file
         # args = parser.parse_args()
@@ -155,7 +140,7 @@ def main():
         if 'kilosort3' in sorter_list:
             ss.Kilosort3Sorter.set_kilosort3_path(params['sorter_paths']['kilosort3_path'])
 
-        datadir = Path(params['datadir'])
+        datadir = Path(sys.argv[1])
         day_folder = datadir.name
         rat_folder = datadir.parent.name
         output_folder = Path(params['output_folder'])
