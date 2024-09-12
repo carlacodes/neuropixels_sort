@@ -56,6 +56,7 @@ def spikesorting_postprocessing(sorting, output_folder, datadir):
     rec = sorting._recording
 
     if (outDir / 'waveforms_folder').exists():
+        print('waveforms folder already exists, going to try to load waveforms directly')
         we = si.load_waveforms(
             outDir / 'waveforms_folder', 
             sorting=sorting,
